@@ -1,0 +1,21 @@
+#grv-recent-select-menu summary.btn {
+    border-radius: 0;
+    border-left-width: 0;
+}
+
+#grv-recent-select-menu .SelectMenu-modal {
+    width: auto;
+    max-width: 640px;
+}
+
+#grv-recent-select-menu .SelectMenu-item {
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#grv-recent-select-menu .grv-typenum {
+    font-weight: bold;
+}
