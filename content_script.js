@@ -1,4 +1,4 @@
-const MAX_HISTORIES_PER_REPO = 100;
+const MAX_HISTORIES_PER_REPO = 1000;
 const TYPE_PULL = 'P';
 const TYPE_ISSUE = 'I';
 
