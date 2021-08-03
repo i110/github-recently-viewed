@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Recently Viewed PRs/Issues",
   "description": "Add a drop down to quickly access to recently viewed Pull Requests and Issues",
-  "version": "0.0.0.1",
+  "version": "0.0.0.2",
   "icons": {
     "16": "icons/16.png",
     "19": "icons/19.png",
@@ -14,12 +14,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://github.com/*/pulls",
-        "*://github.com/*/pulls?*",
-        "*://github.com/*/pull/*",
-        "*://github.com/*/issues",
-        "*://github.com/*/issues?*",
-        "*://github.com/*/issues/*"
+        "*://github.com/*"
       ],
       "js": ["content_script.js"],
       "css": ["main.css"]
