@@ -38,44 +38,80 @@ function list(parsed) {
   if (!existing) {
     const elem = htmlToElement(`
       <details class="details-reset details-overlay subnav-search-context" id="${containerId}">
-        <summary role="button" data-view-component="true" class="btn recent-button" aria-haspopup="menu">
+        <summary role="button" id="grv-recent-button" data-view-component="true" class="btn" aria-haspopup="menu">
           Recent
           <span class="dropdown-caret"></span>
         </summary>
         <details-menu class="SelectMenu" role="menu">
           <div class="SelectMenu-modal">
             <div class="SelectMenu-list">
+              <div class="SelectMenu-item grv-filter subnav-search" aria-checked="false">
+                <input type="text" id="grv-filter-input" class="form-control subnav-search-input input-contrast width-full" placeholder="Filter" aria-label="Filter" autocomplete="off">
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-search subnav-search-icon grv-filter-icon">
+                    <path fill-rule="evenodd" d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"></path>
+                </svg>
+              </div>
             </div>
           </div>
         </details-menu>
       </details>
     `);
-    const searchInput = document.getElementsByClassName('subnav-search')[0];
-    if (!searchInput) {
-      console.warn('cound not find searchInput by the class `subnav-search`')
+    const anchorElem = document.getElementsByClassName('subnav-search')[0];
+    if (!anchorElem) {
+      console.warn('cound not find anchor element by the class `subnav-search`')
       return false;
     }
-    searchInput.parentElement.insertBefore(elem, searchInput);
+    anchorElem.parentElement.insertBefore(elem, anchorElem);
+
+    const filterInput = document.getElementById('grv-filter-input');
+    filterInput.addEventListener('input', (e) => {
+        updateList(e.target.value);
+    });
+    const recentButton = document.getElementById('grv-recent-button');
+    recentButton.addEventListener('click', (e) => {
+        setTimeout(() => {
+            filterInput.focus();
+        }, 50);
+    });
   }
 
   const listElem = document.querySelector(`#${containerId} .SelectMenu-list`);
 
-  chrome.storage.local.get(parsed.repo, (result) => {
-    const state = result[parsed.repo] || {};
-    const listItems = (state.histories || []).reverse().map((item) => {
-      const typeString = item.type === TYPE_PULL ? 'PR' : 'Issue';
-      const typePathComp = item.type === TYPE_PULL ? 'pull' : 'issues';
-      const href = `/${parsed.repo}/${typePathComp}/${item.num}`;
+  let histories = null;
+  const updateList = (query) => {
+    const items = listElem.querySelectorAll('.grv-removable-item');
+    items.forEach((item) => item.remove());
+
+    let filteredHistories = histories;
+    if (query) {
+        query = query.toLowerCase().trim().split(/\s+/).join(' ');
+        filteredHistories = histories.filter((item) => item._filterText.includes(query));
+    }
+
+    const listItems = filteredHistories.reverse().map((item) => {
       return htmlToElement(`
-        <a class="SelectMenu-item" role="menuitemradio" aria-checked="false" href="${href}">
-          <span class="grv-typenum">[${typeString}#${item.num}]</span> ${item.title} <span class="grv-author">by ${item.author || '???'}</span>
+        <a class="SelectMenu-item grv-removable-item" role="menuitemradio" aria-checked="false" href="${item._href}">
+          <span class="grv-typenum">${item._text}</span>
         </a>
       `);
     });
     if (listItems.length === 0) {
-        listItems.push(htmlToElement('<span class="SelectMenu-item">No history</span>'));
+        listItems.push(htmlToElement('<span class="SelectMenu-item grv-removable-item">No history</span>'));
     }
-    listElem.replaceChildren(...listItems);
+    listItems.forEach((item) => listElem.appendChild(item));
+  };
+
+  chrome.storage.local.get(parsed.repo, (result) => {
+    const state = result[parsed.repo] || {};
+    histories = state.histories || [];
+    histories.forEach((item) => {
+        const typeString = item.type === TYPE_PULL ? 'PR' : 'Issue';
+        const typePathComp = item.type === TYPE_PULL ? 'pull' : 'issues';
+        item._href = `/${parsed.repo}/${typePathComp}/${item.num}`;
+        item._text = `[${typeString}#${item.num}]</span> ${item.title} <span class="grv-author">by ${item.author || '???'}`;
+        item._filterText = item._text.toLowerCase();
+    });
+    updateList();
   });
 
   return true;

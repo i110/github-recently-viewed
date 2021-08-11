@@ -23,3 +23,13 @@
 #grv-recent-select-menu .grv-author {
     font-style: italic;
 }
+
+#grv-recent-select-menu .grv-filter {
+    margin-left: 0;
+    padding-left: 12px;
+}
+
+#grv-recent-select-menu .grv-filter-icon {
+    top: 15px;
+    left: 20px;
+}
